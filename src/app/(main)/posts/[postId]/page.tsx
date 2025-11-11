@@ -12,10 +12,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 
-interface PageProps {
-  params: { postId: string };
-}
-
 const getPost = cache(async (postId: string, loggedInUserId: string) => {
   const post = await prisma.post.findUnique({
     where: {
@@ -29,9 +25,8 @@ const getPost = cache(async (postId: string, loggedInUserId: string) => {
   return post;
 });
 
-export async function generateMetadata({
-  params: { postId },
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const { postId } = await params;
   const { user } = await validateRequest();
 
   if (!user) return {};
@@ -43,7 +38,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params: { postId } }: PageProps) {
+export default async function Page({ params }: any) {
+  const { postId } = await params;
   const { user } = await validateRequest();
 
   if (!user) {

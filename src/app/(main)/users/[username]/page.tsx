@@ -15,10 +15,6 @@ import EditProfileButton from "./EditProfileButton";
 import UserPosts from "./UserPosts";
 import { Button } from "@/components/ui/button";
 
-interface PageProps {
-  params: { username: string };
-}
-
 const getUser = cache(async (username: string, loggedInUserId: string) => {
   const user = await prisma.user.findFirst({
     where: {
@@ -35,10 +31,8 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   return user;
 });
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { username } = params;
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const { username } = await params;
 
   const { user: loggedInUser } = await validateRequest();
   if (!loggedInUser) return {};
@@ -48,7 +42,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params: { username } }: PageProps) {
+export default async function Page({ params }: any) {
+  const { username } = await params;
   const { user: loggedInUser } = await validateRequest();
 
   if (!loggedInUser) {
