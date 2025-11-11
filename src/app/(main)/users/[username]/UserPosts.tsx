@@ -30,19 +30,21 @@ export default function UserPosts({ userId }: UserPostsProps) {
         )
         .json<PostsPage>();
 
-      console.log("API response:", res); // <-- debug
+      console.log("API response:", res);
       return res;
     },
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 
+  // ✅ selalu fallback ke array, jadi tidak undefined
   const posts = data?.pages?.flatMap((page) => page.posts) ?? [];
 
   if (status === "pending") {
     return <PostsLoadingSkeleton />;
   }
 
+  // ✅ FIX TypeScript error — gunakan posts.length === 0
   if (status === "success" && posts.length === 0 && !hasNextPage) {
     return (
       <p className="text-muted-foreground text-center">
@@ -60,6 +62,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
   }
 
   console.log("posts data:", posts);
+
   return (
     <InfiniteScrollContainer
       className="space-y-5"
