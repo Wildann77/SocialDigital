@@ -36,11 +36,10 @@ export default function NewChatDialog({
 
   const { data, isFetching, isError, isSuccess } = useQuery({
     queryKey: ["stream-users", searchInputDebounced],
-    queryFn: async () =>
-      client.queryUsers(
+    queryFn: async () => {
+      const res = await client.queryUsers(
         {
-          id: { $nin: [loggedInUser.id] }, // ✅ FIXED
-          role: { $nin: ["admin"] }, // ✅ FIXED
+          id: { $in: ["*", loggedInUser.id] }, // pakai $in agar valid di TypeScript
           ...(searchInputDebounced
             ? {
                 $or: [
@@ -52,7 +51,13 @@ export default function NewChatDialog({
         },
         { name: 1, username: 1 },
         { limit: 15 },
-      ),
+      );
+
+      // ✅ Remove diri sendiri + admin manual via filter
+      return res.users.filter(
+        (u) => u.id !== loggedInUser.id && u.role !== "admin",
+      );
+    },
   });
 
   const mutation = useMutation({
