@@ -1,9 +1,12 @@
+"use client";
+
 import UserAvatar from "@/components/UserAvatar";
 import { NotificationData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { NotificationType } from "@prisma/client";
 import { Heart, MessageCircle, User2 } from "lucide-react";
 import Link from "next/link";
+import React from "react"; // ✅ penting!
 
 interface NotificationProps {
   notification: NotificationData;
@@ -12,7 +15,7 @@ interface NotificationProps {
 export default function Notification({ notification }: NotificationProps) {
   const notificationTypeMap: Record<
     NotificationType,
-    { message: string; icon: JSX.Element; href: string }
+    { message: string; icon: React.ReactNode; href: string } // ✅ FIX disini
   > = {
     FOLLOW: {
       message: `${notification.issuer.displayName} followed you`,
@@ -38,7 +41,7 @@ export default function Notification({ notification }: NotificationProps) {
       <article
         className={cn(
           "bg-card hover:bg-card/70 flex gap-3 rounded-2xl p-5 shadow-sm transition-colors",
-          !notification.read && "bg-primary/10",
+          !notification.read && "bg-primary/10"
         )}
       >
         <div className="my-1">{icon}</div>
