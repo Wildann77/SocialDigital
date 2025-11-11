@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { signUpSchema, SignUpValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { signUp } from "./actions";
 
@@ -21,6 +22,7 @@ export default function SignUpForm() {
   const [error, setError] = useState<string>();
 
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
@@ -35,7 +37,11 @@ export default function SignUpForm() {
     setError(undefined);
     startTransition(async () => {
       const { error } = await signUp(values);
-      if (error) setError(error);
+      if (error) {
+        setError(error);
+        return;
+      }
+      router.push("/");
     });
   }
 

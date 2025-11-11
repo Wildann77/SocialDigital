@@ -7,63 +7,60 @@ import { signUpSchema, SignUpValues } from "@/lib/validation";
 import { hash } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
-export async function signUp(credentials: SignUpValues) {
-  const { username, email, password } = signUpSchema.parse(credentials);
+export async function signUp(
+  credentials: SignUpValues,
+): Promise<{ error?: string }> {
+  try {
+    const { username, email, password } = signUpSchema.parse(credentials);
 
-  // check username/email
-  const existingUsername = await prisma.user.findFirst({
-    where: { username: { equals: username, mode: "insensitive" } },
-  });
-  if (existingUsername) throw new Error("Username already taken");
+    const existingUsername = await prisma.user.findFirst({
+      where: { username: { equals: username, mode: "insensitive" } },
+    });
+    if (existingUsername) return { error: "Username already taken" };
 
-  const existingEmail = await prisma.user.findFirst({
-    where: { email: { equals: email, mode: "insensitive" } },
-  });
-  if (existingEmail) throw new Error("Email already taken");
+    const existingEmail = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+    });
+    if (existingEmail) return { error: "Email already taken" };
 
-  // hash password
-  const passwordHash = await hash(password, {
-    memoryCost: 19456,
-    timeCost: 2,
-    outputLen: 32,
-    parallelism: 1,
-  });
+    const passwordHash = await hash(password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1,
+    });
 
-  const userId = generateIdFromEntropySize(10);
+    const userId = generateIdFromEntropySize(10);
 
-  // create user
-  // await prisma.user.create({
-  //   data: { id: userId, username, displayName: username, email, passwordHash },
-  // });
-
-  await prisma.$transaction(async (tx) => {
-    await tx.user.create({
-      data: {
+    await prisma.$transaction(async (tx) => {
+      await tx.user.create({
+        data: {
+          id: userId,
+          username,
+          displayName: username,
+          email,
+          passwordHash,
+        },
+      });
+      await streamServerClient.upsertUser({
         id: userId,
         username,
-        displayName: username,
-        email,
-        passwordHash,
-      },
+        name: username,
+      });
     });
-    await streamServerClient.upsertUser({
-      id: userId,
-      username,
-      name: username,
-    });
-  });
 
-  // create session
-  const session = await lucia.createSession(userId, {});
-  const sessionCookie = lucia.createSessionCookie(session.id);
-  (await cookies()).set(
-    sessionCookie.name,
-    sessionCookie.value,
-    sessionCookie.attributes,
-  );
+    const session = await lucia.createSession(userId, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    (await cookies()).set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
 
-  // ✅ redirect langsung dari server
-  redirect("/");
+    return { error: undefined };
+  } catch (e) {
+    if (e instanceof Error) return { error: e.message };
+    return { error: "An error occurred" };
+  }
 }
