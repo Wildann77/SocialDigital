@@ -39,8 +39,8 @@ export default function NewChatDialog({
     queryFn: async () =>
       client.queryUsers(
         {
-          id: { $ne: loggedInUser.id },
-          role: { $ne: "admin" },
+          id: { $nin: [loggedInUser.id] }, // ✅ FIXED
+          role: { $nin: ["admin"] }, // ✅ FIXED
           ...(searchInputDebounced
             ? {
                 $or: [
