@@ -62,19 +62,20 @@ export default function NewChatDialog({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const channel = client.channel("messaging", {
+      const channel = client.channel("messaging", undefined, {
         members: [loggedInUser.id, ...selectedUsers.map((u) => u.id)],
-        name:
-          selectedUsers.length > 1
-            ? loggedInUser.displayName +
-              ", " +
-              selectedUsers.map((u) => u.name).join(", ")
-            : undefined,
+        ...(selectedUsers.length > 1 && {
+          name:
+            loggedInUser.displayName +
+            ", " +
+            selectedUsers.map((u) => u.name).join(", "),
+        }),
       });
 
       await channel.create();
       return channel;
     },
+
     onSuccess: (channel) => {
       setActiveChannel(channel);
       onChatCreated();
