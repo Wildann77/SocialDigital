@@ -127,7 +127,7 @@ export default function NewChatDialog({
 
           <div className="h-96 overflow-y-auto">
             {isSuccess &&
-              data.users.map((user) => (
+              data.map((user) => (
                 <UserResult
                   key={user.id}
                   user={user}
@@ -142,7 +142,7 @@ export default function NewChatDialog({
                 />
               ))}
 
-            {isSuccess && !data.users.length && (
+            {isSuccess && data.length === 0 && (
               <p className="text-muted-foreground my-3 text-center">
                 No users found. Try a different name.
               </p>
