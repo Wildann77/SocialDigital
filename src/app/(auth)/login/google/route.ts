@@ -9,11 +9,7 @@ export async function GET() {
   const url = await google.createAuthorizationURL(
     state,
     codeVerifier,
-    ["openid", "profile", "email"], // scope array
-    {
-      access_type: "offline",
-      prompt: "consent",
-    },
+    ["openid", "profile", "email"],
   );
 
   console.log("🔗 Redirect URL Google:", url.toString());
