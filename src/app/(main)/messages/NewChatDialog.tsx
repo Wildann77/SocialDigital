@@ -13,7 +13,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Loader2, SearchIcon, X } from "lucide-react";
 import { useState } from "react";
 import { UserResponse } from "stream-chat";
-import { DefaultStreamChatGenerics, useChatContext } from "stream-chat-react";
+import { useChatContext } from "stream-chat-react";
 import { useSession } from "../SessionProvider";
 
 interface NewChatDialogProps {
@@ -26,17 +26,13 @@ export default function NewChatDialog({
   onChatCreated,
 }: NewChatDialogProps) {
   const { client, setActiveChannel } = useChatContext();
-
   const { toast } = useToast();
-
   const { user: loggedInUser } = useSession();
 
   const [searchInput, setSearchInput] = useState("");
   const searchInputDebounced = useDebounce(searchInput);
 
-  const [selectedUsers, setSelectedUsers] = useState<
-    UserResponse<DefaultStreamChatGenerics>[]
-  >([]);
+  const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
 
   const { data, isFetching, isError, isSuccess } = useQuery({
     queryKey: ["stream-users", searchInputDebounced],
@@ -70,6 +66,7 @@ export default function NewChatDialog({
               selectedUsers.map((u) => u.name).join(", ")
             : undefined,
       });
+
       await channel.create();
       return channel;
     },
@@ -92,6 +89,7 @@ export default function NewChatDialog({
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>New chat</DialogTitle>
         </DialogHeader>
+
         <div>
           <div className="group relative">
             <SearchIcon className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-5 size-5 -translate-y-1/2 transform" />
@@ -102,6 +100,7 @@ export default function NewChatDialog({
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
+
           {!!selectedUsers.length && (
             <div className="mt-4 flex flex-wrap gap-2 p-2">
               {selectedUsers.map((user) => (
@@ -117,7 +116,9 @@ export default function NewChatDialog({
               ))}
             </div>
           )}
+
           <hr />
+
           <div className="h-96 overflow-y-auto">
             {isSuccess &&
               data.users.map((user) => (
@@ -134,12 +135,15 @@ export default function NewChatDialog({
                   }}
                 />
               ))}
+
             {isSuccess && !data.users.length && (
               <p className="text-muted-foreground my-3 text-center">
                 No users found. Try a different name.
               </p>
             )}
+
             {isFetching && <Loader2 className="mx-auto my-3 animate-spin" />}
+
             {isError && (
               <p className="text-destructive my-3 text-center">
                 An error occurred while loading users.
@@ -147,6 +151,7 @@ export default function NewChatDialog({
             )}
           </div>
         </div>
+
         <DialogFooter className="px-6 pb-6">
           <LoadingButton
             disabled={!selectedUsers.length}
@@ -162,7 +167,7 @@ export default function NewChatDialog({
 }
 
 interface UserResultProps {
-  user: UserResponse<DefaultStreamChatGenerics>;
+  user: UserResponse;
   selected: boolean;
   onClick: () => void;
 }
@@ -186,7 +191,7 @@ function UserResult({ user, selected, onClick }: UserResultProps) {
 }
 
 interface SelectedUserTagProps {
-  user: UserResponse<DefaultStreamChatGenerics>;
+  user: UserResponse;
   onRemove: () => void;
 }
 
