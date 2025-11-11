@@ -37,16 +37,13 @@ export default function UserPosts({ userId }: UserPostsProps) {
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 
-  const posts = data?.pages.flatMap((page) => page.posts);
-
-  console.log("raw query data:", data);
-  console.log("flattened posts:", posts);
+  const posts = data?.pages?.flatMap((page) => page.posts) ?? [];
 
   if (status === "pending") {
     return <PostsLoadingSkeleton />;
   }
 
-  if (status === "success" && !posts.length && !hasNextPage) {
+  if (status === "success" && posts.length === 0 && !hasNextPage) {
     return (
       <p className="text-muted-foreground text-center">
         This user hasn&apos;t posted anything yet.
